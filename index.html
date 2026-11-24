@@ -253,6 +253,16 @@ body.dark-theme .pulse-stat{border-color:#27364d}
 body.dark-theme .pulse-foot{background:#1a2942;color:#aabbd5}
 body.dark-theme .trend-icon,body.dark-theme .pulse-mark{background:#243453;color:#adc4ff}
 
+
+/* Workspace navigation: compact three-dot menu */
+.sidebar-menu-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px 10px}
+.sidebar-menu-head .sidebar-label{padding:17px 8px 8px}
+.workspace-menu-toggle{width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(190,205,235,.18);border-radius:11px;background:rgba(255,255,255,.08);color:#fff;font-size:25px;line-height:1;font-weight:800;box-shadow:none;transition:background .15s,border-color .15s}
+.workspace-menu-toggle:hover,.workspace-menu-toggle[aria-expanded="true"]{background:#315be8;border-color:#5278f5;color:#fff}
+.sidebar .nav[hidden]{display:none!important}
+.sidebar .nav:not([hidden]){display:flex;flex:0 0 auto;flex-direction:column;flex-wrap:nowrap;gap:7px;padding:8px;margin:0;background:#1a2945;border:1px solid rgba(190,205,235,.14);border-radius:14px;overflow:visible;box-shadow:0 12px 28px rgba(0,0,0,.16)}
+.sidebar .nav button{width:100%;min-width:0;flex:0 0 auto}
+@media(max-width:760px){.sidebar-menu-head{padding-bottom:10px}}
 </style>
 </head>
 <body>
@@ -260,8 +270,8 @@ body.dark-theme .trend-icon,body.dark-theme .pulse-mark{background:#243453;color
 <div class="app-layout" id="appShell" hidden>
 <aside class="sidebar no-print" id="appSidebar">
   <div class="sidebar-brand"><span class="brand-mark">GS</span><div><b>General Store</b><small>POS Workspace</small></div></div>
-  <div class="sidebar-label">WORKSPACE</div>
-  <nav class="nav no-print" aria-label="Main navigation">
+  <div class="sidebar-menu-head"><div class="sidebar-label">WORKSPACE</div><button class="workspace-menu-toggle" id="workspaceMenuToggle" type="button" aria-label="Open workspace menu" aria-controls="workspaceNav" aria-expanded="false">⋮</button></div>
+  <nav class="nav no-print" id="workspaceNav" aria-label="Main navigation" hidden>
     <button class="active" data-tab="dashboard"><span class="side-icon">⌂</span><span>Dashboard</span></button>
     <button data-tab="billing" id="navBillingShortcut"><span class="side-icon">▣</span><span>Billing</span></button>
     <button data-tab="inventory"><span class="side-icon">▦</span><span>Inventory</span></button>
@@ -546,7 +556,7 @@ $('purchaseForm').onsubmit=e=>{e.preventDefault();const p=data.products.find(x=>
 $('expenseForm').onsubmit=e=>{e.preventDefault();const amount=+$('expenseAmount').value;if(!Number.isFinite(amount)||amount<=0)return msg('Enter a valid expense amount.');data.expenses.push({id:'EXP-'+Date.now(),category:$('expenseCategory').value,amount,date:$('expenseDate').value||isoToday(),payment:$('expensePayment').value,note:$('expenseNote').value.trim()});save();$('expenseForm').reset();$('expenseDate').value=isoToday();render();msg('Expense recorded successfully.')};
 $('expenseRows').addEventListener('click',e=>{const b=e.target.closest('[data-expense-delete]');if(!b)return;const id=b.dataset.expenseDelete;if(confirm('Delete this expense record?')){data.expenses=data.expenses.filter(x=>String(x.id)!==id);save();render();msg('Expense deleted.')}});
 function render(){products();cartView();inventory();sales();returnsView();dues();reports();dashboard();purchasesView();expensesView();let today=day(),t=data.sales.filter(s=>s.day===today),rt=(data.returns||[]).filter(r=>r.day===today);$('todaySales').textContent=money(t.reduce((a,s)=>a+s.total,0)-rt.reduce((a,r)=>a+Number(r.value||0),0));$('todayBills').textContent=t.length}
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>{x.classList.toggle('active',x===b);if(x===b)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});['dashboard','billing','inventory','sales','returns','dues','purchases','expenses','reports','settings'].forEach(x=>$(x).classList.toggle('hidden',x!==b.dataset.tab));$('appShell').classList.remove('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded','false');render()});
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>{x.classList.toggle('active',x===b);if(x===b)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});['dashboard','billing','inventory','sales','returns','dues','purchases','expenses','reports','settings'].forEach(x=>$(x).classList.toggle('hidden',x!==b.dataset.tab));$('workspaceNav').hidden=true;$('workspaceMenuToggle').setAttribute('aria-expanded','false');$('appShell').classList.remove('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded','false');render()});
 
 $('dashNewSale').onclick=()=>$('navBillingShortcut').click();
 $('dashAddProduct').onclick=()=>$('addProduct').click();
@@ -554,6 +564,7 @@ $('dashSalesLink').onclick=()=>document.querySelector('.nav button[data-tab="sal
 $('dashInventoryLink').onclick=()=>document.querySelector('.nav button[data-tab="inventory"]').click();
 $('mobileCartJump').onclick=()=>$('billPanel').scrollIntoView({behavior:'smooth',block:'start'});
 
+$('workspaceMenuToggle').onclick=()=>{const open=$('workspaceNav').hidden;$('workspaceNav').hidden=!open;$('workspaceMenuToggle').setAttribute('aria-expanded',String(open))};
 $('sidebarToggle').onclick=()=>{const open=$('appShell').classList.toggle('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded',String(open))};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('appShell').classList.remove('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded','false')}if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&$('loginScreen').hidden){e.preventDefault();$('checkout').click()}if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&$('loginScreen').hidden){e.preventDefault();$('navBillingShortcut')?.click();$('searchProduct').focus()}});
 document.addEventListener('click',e=>{if(window.innerWidth<=760&&$('appShell').classList.contains('sidebar-open')&&!e.target.closest('#appSidebar')&&!e.target.closest('#sidebarToggle'))$('appShell').classList.remove('sidebar-open')});
