@@ -119,6 +119,7 @@ body{background:#f4f6fb}
 }
 
 .checkout-button{position:relative;display:flex;align-items:center;justify-content:center;gap:10px}.checkout-shortcut{font-size:10px;font-weight:650;opacity:.8;padding:3px 6px;border:1px solid rgba(255,255,255,.35);border-radius:5px;white-space:nowrap}@media(max-width:760px){.checkout-shortcut{display:none}}body.dark-theme .checkout-shortcut{border-color:rgba(255,255,255,.2)}
+.payment-summary{display:grid;gap:7px;margin:10px 0;padding:11px 12px;border:1px solid var(--line,#e5eaf3);border-radius:11px;background:var(--soft-surface,#f8faff)}.payment-summary-row{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11px;color:var(--muted,#7182a3)}.payment-summary-row b{color:var(--ink,#233654);font-size:12px;font-variant-numeric:tabular-nums}.payment-summary-row.payment-due b{color:#c47b22}.payment-summary-row:last-child b{color:#16845f}body.dark-theme .payment-summary{background:#1a2942;border-color:#2b3c5b}body.dark-theme .payment-summary-row b{color:#e8eef9}body.dark-theme .payment-summary-row.payment-due b{color:#e7a54c}body.dark-theme .payment-summary-row:last-child b{color:#56d0a0}
 /* Small usability refinements */
 .stock-warning{display:inline-flex;align-self:flex-start;margin-top:7px;padding:3px 7px;border-radius:6px;background:#fff1e8;color:#b45309;font-size:10px;font-weight:750}
 .product:disabled .product-mark{background:#fff0f0;color:#c24141}
@@ -347,7 +348,7 @@ body.dark-theme .trend-icon,body.dark-theme .pulse-mark{background:#243453;color
     <label for="payment">Payment method</label><select class="field" id="payment"><option>Cash</option><option>bKash</option><option>Nagad</option><option>Card</option></select>
     <label for="received">Amount received (৳)</label><input class="field" id="received" type="number" min="0" placeholder="Enter amount received (partial payment allowed)">
     <p class="muted small bill-help">For credit sales, enter the amount paid now. Remaining balance will be added to Customer Due. A customer name is required for unpaid balance.</p>
-    <div class="row bill-change-row"><span class="muted">Change / Due</span><b id="change">৳0</b></div>
+    <div class="row bill-change-row"><span class="muted">Change / Due</span><b id="change">৳0</b></div><div class="payment-summary" id="paymentBreakdown" aria-live="polite"><div class="payment-summary-row"><span>Paid now</span><b>৳0</b></div><div class="payment-summary-row"><span>Remaining due</span><b>৳0</b></div><div class="payment-summary-row"><span>Change to return</span><b>৳0</b></div></div>
     <button class="btn primary checkout-button" style="width:100%" id="checkout" type="button">Complete Sale &amp; Print Receipt <span class="checkout-shortcut">Ctrl + Enter</span></button>
     <p class="muted small bill-stock-note">Stock updates after a successful sale.</p>
   </div>
@@ -443,6 +444,8 @@ function cartView(){
  $('grandTotal').textContent=money(t.total);
  const received=+$('received').value||0;
  $('change').textContent=received>=t.total?money(received-t.total):'Due '+money(t.total-received);
+ const paid=Math.max(0,Math.min(received,t.total)),due=Math.max(0,t.total-paid),change=Math.max(0,received-t.total);
+ $('paymentBreakdown').innerHTML=`<div class="payment-summary-row"><span>Paid now</span><b>${money(paid)}</b></div><div class="payment-summary-row ${due>0?'payment-due':''}"><span>Remaining due</span><b>${money(due)}</b></div><div class="payment-summary-row"><span>Change to return</span><b>${money(change)}</b></div>`;
 }
 function add(id){let p=data.products.find(p=>p.id===id),c=cart.find(c=>c.id===id);if(!p||p.stock<=0)return msg('Out of stock.');if(c){if(c.qty>=p.stock)return msg('Not enough stock.');c.qty++}else cart.push({...p,qty:1});cartView()}
 $('productGrid').addEventListener('click',e=>{let b=e.target.closest('[data-add]');if(b)add(+b.dataset.add)});
