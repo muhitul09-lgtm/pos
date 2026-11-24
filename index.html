@@ -118,6 +118,7 @@ body{background:#f4f6fb}
  .billing-page .product{min-height:132px}
 }
 
+.checkout-button{position:relative;display:flex;align-items:center;justify-content:center;gap:10px}.checkout-shortcut{font-size:10px;font-weight:650;opacity:.8;padding:3px 6px;border:1px solid rgba(255,255,255,.35);border-radius:5px;white-space:nowrap}@media(max-width:760px){.checkout-shortcut{display:none}}body.dark-theme .checkout-shortcut{border-color:rgba(255,255,255,.2)}
 /* Small usability refinements */
 .stock-warning{display:inline-flex;align-self:flex-start;margin-top:7px;padding:3px 7px;border-radius:6px;background:#fff1e8;color:#b45309;font-size:10px;font-weight:750}
 .product:disabled .product-mark{background:#fff0f0;color:#c24141}
@@ -347,7 +348,7 @@ body.dark-theme .trend-icon,body.dark-theme .pulse-mark{background:#243453;color
     <label for="received">Amount received (৳)</label><input class="field" id="received" type="number" min="0" placeholder="Enter amount received (partial payment allowed)">
     <p class="muted small bill-help">For credit sales, enter the amount paid now. Remaining balance will be added to Customer Due. A customer name is required for unpaid balance.</p>
     <div class="row bill-change-row"><span class="muted">Change / Due</span><b id="change">৳0</b></div>
-    <button class="btn primary" style="width:100%" id="checkout" type="button">Complete Sale &amp; Print Receipt</button>
+    <button class="btn primary checkout-button" style="width:100%" id="checkout" type="button">Complete Sale &amp; Print Receipt <span class="checkout-shortcut">Ctrl + Enter</span></button>
     <p class="muted small bill-stock-note">Stock updates after a successful sale.</p>
   </div>
 </div>
@@ -551,7 +552,7 @@ $('dashInventoryLink').onclick=()=>document.querySelector('.nav button[data-tab=
 $('mobileCartJump').onclick=()=>$('billPanel').scrollIntoView({behavior:'smooth',block:'start'});
 
 $('sidebarToggle').onclick=()=>{const open=$('appShell').classList.toggle('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded',String(open))};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('appShell').classList.remove('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded','false')}if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&$('loginScreen').hidden){e.preventDefault();$('navBillingShortcut')?.click();$('searchProduct').focus()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('appShell').classList.remove('sidebar-open');$('sidebarToggle').setAttribute('aria-expanded','false')}if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&$('loginScreen').hidden){e.preventDefault();$('checkout').click()}if(e.key==='F2'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&$('loginScreen').hidden){e.preventDefault();$('navBillingShortcut')?.click();$('searchProduct').focus()}});
 document.addEventListener('click',e=>{if(window.innerWidth<=760&&$('appShell').classList.contains('sidebar-open')&&!e.target.closest('#appSidebar')&&!e.target.closest('#sidebarToggle'))$('appShell').classList.remove('sidebar-open')});
 $('inventorySearch').oninput=inventory;$('categoryFilter').onchange=inventory;$('salesSearch').oninput=sales;
 function csv(name,rows){let blob=new Blob(['\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
